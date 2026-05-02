@@ -1,5 +1,5 @@
 import json
-from .llm_client import call_llm
+from .gemini_client import call_llm
 
 def prioritize_tasks(tasks: list) -> str:
     """Uses LLM to suggest priorities for a list of tasks."""

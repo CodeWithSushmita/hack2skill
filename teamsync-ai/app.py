@@ -31,7 +31,7 @@ if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
 
 st.title("TeamSync AI")
-st.markdown("Team Collaboration Tool powered by Groq")
+st.markdown("Team Collaboration Tool powered by Google Cloud & Gemini")
 
 # Sidebar Navigation
 st.sidebar.markdown("""
@@ -40,7 +40,7 @@ st.sidebar.markdown("""
     <div style="width:34px;height:34px;background:#4f46e5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:14px;flex-shrink:0;">TS</div>
     <div>
       <div style="font-size:14px;font-weight:700;color:#f3f4f6;line-height:1.2;">TeamSync AI</div>
-      <div style="font-size:10px;color:#6b7280;margin-top:1px;">Powered by Groq LLM</div>
+      <div style="font-size:10px;color:#6b7280;margin-top:1px;">Powered by Google Gemini</div>
     </div>
   </div>
 </div>
