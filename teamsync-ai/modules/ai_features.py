@@ -1,8 +1,8 @@
 import json
-from .gemini_client import generate_text
+from .llm_client import call_llm
 
 def prioritize_tasks(tasks: list) -> str:
-    """Uses Gemini to suggest priorities for a list of tasks."""
+    """Uses LLM to suggest priorities for a list of tasks."""
     if not tasks:
         return "No tasks to prioritize."
 
@@ -17,7 +17,7 @@ def prioritize_tasks(tasks: list) -> str:
     Output Format:
     - **Task Title**: Priority - Justification
     """
-    return generate_text(prompt)
+    return call_llm(prompt)
 
 def generate_daily_standup(tasks: list) -> str:
     """Generates a daily standup summary from the current task list."""
@@ -33,7 +33,7 @@ def generate_daily_standup(tasks: list) -> str:
     Task Data:
     {task_data}
     """
-    return generate_text(prompt)
+    return call_llm(prompt)
 
 def chat_with_team_bot(tasks: list, user_message: str, chat_history: str = "") -> str:
     """Allows the user to chat with an AI assistant that knows about the project context."""
@@ -52,4 +52,99 @@ def chat_with_team_bot(tasks: list, user_message: str, chat_history: str = "") -
     User: {user_message}
     AI Assistant:
     """
-    return generate_text(prompt)
+    return call_llm(prompt)
+
+def summarize_meeting_notes(transcript: str) -> str:
+    """Summarizes a meeting transcript into key points and action items."""
+    if not transcript.strip():
+        return "No transcript provided."
+        
+    prompt = f"""
+    You are an AI Meeting Assistant. Summarize the following meeting transcript.
+    Extract the key discussion points, decisions made, and a clear list of action items (with assignees if mentioned).
+    
+    Transcript:
+    {transcript}
+    """
+    return call_llm(prompt)
+
+def get_dashboard_insight(tasks: list) -> str:
+    """Generates a real-time insight about the current task board."""
+    if not tasks:
+        return "No active tasks. Add tasks to see AI insights."
+    
+    task_context = "\n".join([f"- [{t['status']}] {t['title']} (Priority: {t['priority']})" for t in tasks])
+    prompt = f"""
+    Given these tasks, give ONE specific actionable insight about workload, blockers, or priorities in under 30 words.
+    
+    Tasks:
+    {task_context}
+    """
+    return call_llm(prompt)
+
+def assess_risk_level(tasks: list) -> str:
+    """Assesses the overall project risk based on tasks."""
+    if not tasks:
+        return "Low "
+        
+    task_context = "\n".join([f"- [{t['status']}] {t['title']} (Priority: {t['priority']})" for t in tasks])
+    prompt = f"""
+    You are an AI Risk Analyst. Based on the following tasks, assess the overall project risk level.
+    Return ONLY ONE of these exact strings: "Low ", "Medium ", or "High ".
+    Do not include any other text or explanation.
+    
+    Tasks:
+    {task_context}
+    """
+    return call_llm(prompt).strip()
+
+def generate_risk_report(tasks: list) -> str:
+    """Generates a structured risk report."""
+    if not tasks:
+        return "No tasks to analyze."
+        
+    task_context = "\n".join([f"- {t['title']} (Assignee: {t['assignee']}, Status: {t['status']}, Priority: {t['priority']})" for t in tasks])
+    prompt = f"""
+    You are a senior project manager. Analyze these tasks and return a structured risk report with: 
+     Critical Risks,  Warnings,  What's on track, and  Recommendations. 
+    Be specific and actionable.
+    
+    Tasks:
+    {task_context}
+    """
+    return call_llm(prompt)
+
+def get_risk_metrics(tasks: list) -> dict:
+    """Generates numerical risk metrics using LLM."""
+    if not tasks:
+        return {"at_risk": 0, "overloaded": 0, "priority_changes": 0}
+        
+    task_context = "\n".join([f"- {t['title']} (Assignee: {t['assignee']}, Status: {t['status']}, Priority: {t['priority']})" for t in tasks])
+    prompt = f"""
+    Analyze these tasks and return ONLY a valid JSON object with three integer keys:
+    "at_risk": (number of tasks that are high risk or blocked),
+    "overloaded": (number of team members assigned to too many tasks),
+    "priority_changes": (number of tasks that need priority adjustment).
+    
+    Tasks:
+    {task_context}
+    """
+    try:
+        response = call_llm(prompt, "You are a data system. Output ONLY raw JSON, without markdown formatting or backticks.")
+        cleaned = response.strip().replace("```json", "").replace("```", "")
+        data = json.loads(cleaned)
+        return {
+            "at_risk": data.get("at_risk", 0), 
+            "overloaded": data.get("overloaded", 0), 
+            "priority_changes": data.get("priority_changes", 0)
+        }
+    except Exception as e:
+        return {"at_risk": "?", "overloaded": "?", "priority_changes": "?"}
+
+def generate_task_description(title: str) -> str:
+    """Generates a smart task description based on the title."""
+    prompt = f"""
+    Write a clear, concise task description (2-3 sentences) for a software team task titled: '{title}'.
+    Include what needs to be done, expected outcome, and any technical considerations.
+    """
+    return call_llm(prompt)
